@@ -64,8 +64,12 @@ namespace AnimationImporter.Aseprite
 
 		public bool IsValid()
 		{
-			return AnimationImporter.Instance != null && AnimationImporter.Instance.sharedData != null
-				&& File.Exists(AnimationImporter.Instance.asepritePath);
+			return AnimationImporter.Instance != null && AnimationImporter.Instance.sharedData != null;
+		}
+
+		public bool IsConfigured()
+		{
+			return File.Exists(Path.GetFullPath(AnimationImporter.Instance.asepritePath));
 		}
 
 		// ================================================================================
@@ -214,7 +218,7 @@ namespace AnimationImporter.Aseprite
 
 			System.Diagnostics.ProcessStartInfo start = new System.Diagnostics.ProcessStartInfo();
 			start.Arguments = "-b " + buildOptions;
-			start.FileName = asepritePath;
+			start.FileName = Path.GetFullPath(asepritePath);
 			start.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 			start.CreateNoWindow = true;
 			start.UseShellExecute = false;
@@ -253,6 +257,19 @@ namespace AnimationImporter.Aseprite
 				anim.name = frameTag["name"].Str;
 				anim.firstSpriteIndex = (int)(frameTag["from"].Number);
 				anim.lastSpriteIndex = (int)(frameTag["to"].Number);
+
+				switch (frameTag["direction"].Str)
+				{
+					default:
+						anim.direction = PlaybackDirection.Forward;
+						break;
+					case "reverse":
+						anim.direction = PlaybackDirection.Reverse;
+						break;
+					case "pingpong":
+						anim.direction = PlaybackDirection.PingPong;
+						break;
+				}
 
 				animationSheet.animations.Add(anim);
 			}
